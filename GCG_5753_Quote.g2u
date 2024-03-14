@@ -1,0 +1,89 @@
+﻿Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	F.Intrinsic.Control.Case(16090)	
+		F.Intrinsic.Control.If(V.Passed.BIP_ReportID,=,"000001")
+			F.Intrinsic.UI.Msgbox("Is this a Machinery Quote?","Attention",4,V.Local.iRet)
+			F.Intrinsic.Control.If(V.Local.iRet,=,6)
+				F.Intrinsic.Control.CallSub(Print_Report)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.CallSub(Exit)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Quote.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Print_Report.Start
+F.Intrinsic.Control.SetErrorHandler("Print_Report_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sParams.Declare(String,"")
+V.Local.sValues.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iRptID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.iRet.Declare(Long,0)
+
+V.Local.sParams.Set("TERMINAL*!*REPORTID")
+F.Intrinsic.String.Build("{0}*!*{1}",V.Passed.BIP_Terminal,V.Passed.BIP_ReportID,V.Local.sValues)
+f.Intrinsic.Control.If(v.Caller.CompanyCode,=,"MEU")
+	F.Global.BI.GetIDFromName("GCG_5753_QuoteFormLaser_EU.rpt",V.Local.iRptID)
+f.Intrinsic.Control.Else
+	F.Global.BI.GetIDFromName("GCG_5753_QuoteFormLaser.rpt",V.Local.iRptID)
+f.Intrinsic.Control.EndIf
+F.Global.BI.GetRunID(V.Local.iRunID)
+F.Global.BI.StartLogging(V.Local.iRunID,V.Local.iRptID,-1,"",V.Local.iLogID)
+F.Global.BI.StopLogging(V.Local.iLogID)
+V.Passed.CANCEL.Set("1")
+F.Global.BI.RunReportPreProcessor(V.Local.iRunID,V.Local.iLogID,V.Local.sParams,V.Local.sValues,"",-1,True,"",-1,"",-1,"","",V.Local.iRet)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Print_Report_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Quote.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Print_Report.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Quote.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$rnair$}$20200915133410660$}$JUGEdtlNdgRUPvge2DQ26QlJ++3xMCFeBCkXugdtZHrByaqGP8RjQcWNdNSjdDkGNVea3iD+CUw=
+Program.Sub.Comments.End
