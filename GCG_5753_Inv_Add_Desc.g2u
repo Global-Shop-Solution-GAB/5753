@@ -1,0 +1,104 @@
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sPart.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	F.Intrinsic.Control.Case(10120)
+		'Script 1 button
+		V.Passed.000068.Set("Add. Desc")
+		
+	F.Intrinsic.Control.Case(10210)
+		'Part no V.passed.000007
+		'Rev V.passed.000008
+		'Loc V.passed.000009
+		'checking that a part is selected
+		F.Intrinsic.Control.If(V.Passed.000007.Trim,<>,"")
+			F.Intrinsic.String.RPad(V.Passed.000007.Trim," ",17,V.Local.sPart)
+			F.Intrinsic.String.Build("{0}{1}",V.Local.sPart,V.Passed.000008.Trim,V.Local.sPart)
+			F.Intrinsic.Control.CallSub(Get_Data,"Part",V.Local.sPart.Trim,"Loc",V.Passed.000009.Trim)
+		F.Intrinsic.Control.EndIf
+		
+	F.Intrinsic.Control.CaseElse
+		F.Intrinsic.Control.CallSub(Exit)
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Inv_Add_Desc.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sDesc.Declare(String,"")
+
+'getting any saved add desc for selected part
+F.Intrinsic.String.Build("Select Part, Location, Description From GCG_5753_Inv_Desc Where Part = '{0}' and Location = '{1}'",V.Args.Part,V.Args.Loc,V.Local.sSql)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Desc","con",V.Local.sSql,True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.DataTable.Desc.RowCount--,<>,-1)
+	V.Local.sDesc.Set(V.DataTable.Desc(V.DataTable.Desc.RowCount--).Description!FieldValTrim)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.UI.InputBoxExt("Enter Additional Description",V.Local.sDesc,"24*!*Save*!*Exit")
+
+F.Intrinsic.Control.If(V.Ambient.AltBoxClick,=,3)
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Intrinsic.Control.If(V.DataTable.Desc.RowCount--,<>,-1)
+		F.Data.DataTable.SetValue("Desc",V.DataTable.Desc.RowCount--,"Description",Variable.Ambient.AltBoxVal.Trim)
+	F.Intrinsic.Control.Else
+		F.Data.DataTable.AddRow("Desc","Part",V.Args.Part,"Location",V.Args.Loc,"Description",Variable.Ambient.AltBoxVal.Trim)
+	F.Intrinsic.Control.EndIf
+	F.Data.DataTable.SaveToDB("Desc","con","GCG_5753_Inv_Desc","Part*!*Location",7,"Part@!@Part*!*Location@!@Location*!*Description@!@Description")
+	F.Data.DataTable.Close("Desc")
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(Exit)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Inv_Add_Desc.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Inv_Add_Desc.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
