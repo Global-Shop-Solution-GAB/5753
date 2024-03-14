@@ -1,0 +1,166 @@
+Program.Sub.ScreenSU.Start
+Gui.FormInvestSum..Create
+Gui.FormInvestSum..Caption("Investment Summary")
+Gui.FormInvestSum..Size(9825,8880)
+Gui.FormInvestSum..MinX(0)
+Gui.FormInvestSum..MinY(0)
+Gui.FormInvestSum..Position(0,0)
+Gui.FormInvestSum..BackColor(-2147483633)
+Gui.FormInvestSum..MousePointer(0)
+Gui.FormInvestSum..Event(UnLoad,FormInvestSum_UnLoad)
+Gui.FormInvestSum.lblOpTraining.Create(Label,"Operator Training",True,1935,255,0,105,360,True,0,"Arial",8,-2147483633,0)
+Gui.FormInvestSum.txtOpTrain.Create(TextBoxR)
+Gui.FormInvestSum.txtOpTrain.Size(9450,735)
+Gui.FormInvestSum.txtOpTrain.Position(105,570)
+Gui.FormInvestSum.lblElectrical.Create(Label,"Electrical",True,1935,255,0,105,1440,True,0,"Arial",8,-2147483633,0)
+Gui.FormInvestSum.txtElec.Create(TextBoxR)
+Gui.FormInvestSum.txtElec.Size(9450,735)
+Gui.FormInvestSum.txtElec.Position(105,1650)
+Gui.FormInvestSum.txtShopAir.Create(TextBoxR)
+Gui.FormInvestSum.txtShopAir.Size(9450,735)
+Gui.FormInvestSum.txtShopAir.Position(105,2730)
+Gui.FormInvestSum.lblShopAir.Create(Label,"Shop Air Requirements",True,1935,255,0,105,2520,True,0,"Arial",8,-2147483633,0)
+Gui.FormInvestSum.txtLead.Create(TextBoxR)
+Gui.FormInvestSum.txtLead.Size(9450,735)
+Gui.FormInvestSum.txtLead.Position(105,3810)
+Gui.FormInvestSum.lblLeadTime.Create(Label,"Lead Time",True,1935,255,0,105,3600,True,0,"Arial",8,-2147483633,0)
+Gui.FormInvestSum.lblPayTerms.Create(Label,"Payment Terms Comments",True,2835,255,0,105,4680,True,0,"Arial",8,-2147483633,0)
+Gui.FormInvestSum.txtPayTerm.Create(TextBoxR)
+Gui.FormInvestSum.txtPayTerm.Size(9450,1245)
+Gui.FormInvestSum.txtPayTerm.Position(105,4890)
+Gui.FormInvestSum.lblComments.Create(Label,"Comments",True,2835,255,0,105,6270,True,0,"Arial",8,-2147483633,0)
+Gui.FormInvestSum.txtComm.Create(TextBoxR)
+Gui.FormInvestSum.txtComm.Size(9450,1245)
+Gui.FormInvestSum.txtComm.Position(105,6480)
+Gui.FormInvestSum.cmdSave.Create(Button)
+Gui.FormInvestSum.cmdSave.Size(855,375)
+Gui.FormInvestSum.cmdSave.Position(105,7935)
+Gui.FormInvestSum.cmdSave.Caption("Save")
+Gui.FormInvestSum.cmdSave.Event(Click,cmdSave_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sQuote.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	F.Intrinsic.Control.Case(10710)
+		V.Passed.000201.Set("Invst Summ")
+		
+	F.Intrinsic.Control.Case(10960)
+		F.Intrinsic.String.LPad(V.Passed.000003,"0",7,V.Local.sQuote)
+		F.Intrinsic.Control.CallSub(Get_Data,"Quote",V.Local.sQuote)
+		
+		Gui.FormInvestSum..Show
+		
+	F.Intrinsic.Control.CaseElse
+		F.Intrinsic.Control.CallSub(FormInvestSum_UnLoad)
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Invest_Summary.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormInvestSum_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormInvestSum_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormInvestSum_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormInvestSum_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Invest_Summary.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormInvestSum_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.String.Build("Select Quote, Op_Train, Electrical, Shop_Air, Lead_Time, Pay_Term_Com, Comments From GCG_5753_Invst_Summ Where Quote = '{0}'",V.Args.Quote,V.Local.sSql)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Summ","con",V.Local.sSql,True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.DataTable.Summ.RowCount--,<>,-1)
+	Gui.FormInvestSum.txtOpTrain.Text(V.DataTable.Summ(V.DataTable.Summ.RowCount--).Op_Train!FieldValTrim)
+	Gui.FormInvestSum.txtElec.Text(V.DataTable.Summ(V.DataTable.Summ.RowCount--).Electrical!FieldValTrim)
+	Gui.FormInvestSum.txtShopAir.Text(V.DataTable.Summ(V.DataTable.Summ.RowCount--).Shop_Air!FieldValTrim)
+	Gui.FormInvestSum.txtLead.Text(V.DataTable.Summ(V.DataTable.Summ.RowCount--).Lead_Time!FieldValTrim)
+	Gui.FormInvestSum.txtPayTerm.Text(V.DataTable.Summ(V.DataTable.Summ.RowCount--).Pay_Term_Com!FieldValTrim)
+	Gui.FormInvestSum.txtComm.Text(V.DataTable.Summ(V.DataTable.Summ.RowCount--).Comments!FieldValTrim)
+F.Intrinsic.Control.Else
+	F.Data.DataTable.AddRow("Summ","Quote",V.Args.Quote)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Invest_Summary.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormInvestSum_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sText.Declare(String,"")
+
+V.Local.sText.Redim(0,5)
+
+V.Local.sText(0).Set(V.Screen.FormInvestSum!txtOpTrain.Text)
+V.Local.sText(1).Set(V.Screen.FormInvestSum!txtElec.Text)
+V.Local.sText(2).Set(V.Screen.FormInvestSum!txtShopAir.Text)
+V.Local.sText(3).Set(V.Screen.FormInvestSum!txtLead.Text)
+V.Local.sText(4).Set(V.Screen.FormInvestSum!txtPayTerm.Text)
+V.Local.sText(5).Set(V.Screen.FormInvestSum!txtComm.Text)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.SetValue("Summ",v.DataTable.Summ.RowCount--,"Op_Train",V.Local.sText(0).Trim,"Electrical",V.Local.sText(1).Trim,"Shop_Air",V.Local.sText(2).Trim,"Lead_Time",V.Local.sText(3).Trim,"Pay_Term_Com",V.Local.sText(4).Trim,"Comments",V.Local.sText(5).Trim)
+F.Data.DataTable.SaveToDB("Summ","con","GCG_5753_Invst_Summ","Quote",7,"Quote@!@Quote*!*Op_Train@!@Op_Train*!*Electrical@!@Electrical*!*Shop_Air@!@Shop_Air*!*Lead_Time@!@Lead_Time*!*Pay_Term_Com@!@Pay_Term_Com*!*Comments@!@Comments")
+
+F.ODBC.Connection!Con.Close
+
+F.Data.DataTable.Close("Summ")
+
+F.Intrinsic.Control.CallSub(FormInvestSum_UnLoad)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5753_Invest_Summary.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormInvestSum_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
